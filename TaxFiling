@@ -1,0 +1,213 @@
+import java.util.Scanner;
+
+public class TaxFiling 
+{
+	public static final int SINGLE_FILER = 0;
+    public static final int MARRIED_JOINTLY_OR_QUALIFYING_WIDOW= 1;
+    public static final int MARRIED_SEPARATELY = 2;
+    public static final int HEAD_OF_HOUSEHOLD = 3;
+
+	public static void main(String[] args) 
+    {
+    	int taxYear;
+    	int sIncome;
+    	int eIncome;
+    	int stepVal;
+    	
+    	Scanner input = new Scanner(System.in);
+    	
+    	System.out.print("Enter a tax year (2001 or 2009): ");
+    	taxYear = input.nextInt();
+    	
+    	if(taxYear != 2009 && taxYear != 2001)
+    	{
+    		System.out.println("Please enter a valid year!");
+    		System.exit(1);
+    	}
+    	
+    	System.out.print("Enter the staring income value: ");
+    	sIncome = input.nextInt();
+    	
+    	
+    	System.out.print("Enter the ending income value: ");
+    	eIncome = input.nextInt();
+    	
+    	if(eIncome < sIncome)
+    	{
+    		System.out.println("Ending income cannot be less than starting income!");
+    		System.exit(2);
+    	}
+    	
+    	System.out.print("Enter the income step value: ");
+    	stepVal = input.nextInt();
+    	
+    	if(stepVal < 0)
+    	{
+    		System.out.println("Please enter a positive step value!");
+    		System.exit(3);
+    	}
+    	
+    	
+    	
+    	 		int[][] brackets2009 = {
+    	        // stat 0 single
+    	        {8350,33950, 82250, 171550, 372950},
+    	        // stat 1 Married Filing Jointly
+    	        {16700, 67900, 137050, 208850, 372950},
+    	        // stat 2 Married Filing Separately
+    	        {8350, 33950, 68525, 104425, 186475},
+    	        // stat 3 Head of Household
+    	        {11950, 45500, 117450, 190200, 372950}};
+    	        
+    	  		int[][] brackets2001 = {
+    	    	// stat 0 single
+    	    	{27050, 65550, 136750, 297350},
+    	    	// stat 1 married joint 
+    	    	{45200, 109250, 166500, 297350},
+    	    	// stat 2 married separate
+    	    	{22600, 54625, 83250, 148675},
+    	    	// stat 3 head of household
+    	    	{36250, 93650, 15150, 297350}};
+
+    	        double[] rates2009 = { 0.10, 0.15,0.25,0.28,0.33,0.35 };
+    	        
+    	        double[] rates2001 = {.15, .275, .305, .355, .391};
+
+    	 
+    	        String s1 = "Taxable Income";
+    	        String s2 = "Single";
+    	        String s3 = "Married Joint";
+    	        String s4 = "Married Separate";
+    	        String s5 = "Head of house";
+    	        
+    	        System.out.println("\n" + taxYear + " Tax Table");
+    	        System.out.println("Income range: " + sIncome + " to " + eIncome);
+ 	    	
+    	        
+    	        System.out.printf("%-20s%-12s%-4s%21s%16s\n", s1, s2, s3, s4, s5);
+ 	        
+    	        Tax t2001 = new Tax(0, brackets2001, rates2001, sIncome);
+    	        Tax t2009 = new Tax(0, brackets2009, rates2009, sIncome);
+    	     
+ 	      
+    	        if(taxYear == 2001)
+    	        {
+    	        	displayTaxTable(t2001, sIncome, eIncome, stepVal);
+    	        }
+    	        else if(taxYear == 2009)
+    	        {
+    	        	displayTaxTable(t2009, sIncome, eIncome, stepVal); 
+    	        }
+  }
+	
+	public static void displayTaxTable(Tax tObj, int sIncome, int eIncome, int stepVal)
+	{
+    	
+        	for (int i = sIncome; i <= eIncome; i += stepVal) 
+        	{
+        		tObj.setTaxableIncome(i);
+        		
+        		tObj.setFilingStatus(SINGLE_FILER);
+        		double taxSingle = tObj.getTax();
+        		
+        		tObj.setFilingStatus(MARRIED_JOINTLY_OR_QUALIFYING_WIDOW);
+        		double taxMarried = tObj.getTax();
+        				
+                tObj.setFilingStatus(MARRIED_SEPARATELY);
+                double taxSeparately = tObj.getTax();
+                
+                tObj.setFilingStatus(HEAD_OF_HOUSEHOLD);
+                double taxHead = tObj.getTax();
+                
+        		System.out.printf("%-8s %19.2f% 16.2f% 16.2f% 16.2f\n", i, taxSingle, taxMarried, taxSeparately, taxHead
+        			);
+        		
+        	}
+     }
+}	
+
+class Tax
+{
+	
+    private int filingStatus;
+    private int[][] brackets;
+    private double[] rates;
+    private double taxableIncome;
+
+    public Tax(int filingStatus, int[][] brackets, double[] rates, double taxableIncome) 
+    {
+        this.filingStatus = filingStatus;
+        this.brackets = brackets;
+        this.rates = rates;
+        this.taxableIncome = taxableIncome;
+
+    }
+    
+	public int getFilingStatus() 
+    {
+        return filingStatus;
+    }
+
+    public void setFilingStatus(int filingStatus) 
+    {
+        this.filingStatus = filingStatus;
+    }
+
+    public int[][] getBrackets() 
+    {
+        return brackets;
+    }
+
+    public void setBrackets(int[][] brackets) 
+    {
+        this.brackets = brackets;
+    }
+
+    public double[] getRates() 
+    {
+        return rates;
+    }
+
+    public void setRates(double[] rates) 
+    {
+        this.rates = rates;
+    }
+
+    public double getTaxableIncome() 
+    {
+        return taxableIncome;
+    }
+
+    public void setTaxableIncome(double taxableIncome) 
+    {
+        this.taxableIncome = taxableIncome;
+    }
+    
+
+    public double getTax() {
+        double tax;
+        tax = brackets[filingStatus][0] * rates[0];
+        
+        
+       
+        
+
+        for (int i = 1; i < brackets[filingStatus].length; i++) 
+        {
+        	if (taxableIncome <= brackets[filingStatus][0]) 
+ 	        	return Math.round(taxableIncome * rates[0]);
+        	
+            if (taxableIncome > brackets[filingStatus][i]) 
+            {
+                tax += (brackets[filingStatus][i] - brackets[filingStatus][i - 1]) * rates[i];
+            } 
+            else 
+            {
+                return Math.round(tax + (taxableIncome - brackets[filingStatus][i - 1]) * rates[i]);
+            }
+        }
+        return Math.round(tax + (taxableIncome - brackets[filingStatus][4]) * rates[5]);
+    }
+    
+    
+}
